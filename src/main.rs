@@ -154,6 +154,45 @@ fn main() {
     // Whenever a vector outgrows its buffer's capacity, it chooses a new buffer twice as large as the old one. I.e starting at 1, it'd grow to 2, then 4, 8, and so on (2^n for some n). Since the number of actual elements is at least half the buffer size, the vector has always performed less than two copies per element.
     // What this means is that using Vec::with_capacity instead of Vec::new is a way to gain a constant factor improvement in speed, rather than an algorithmic improvement. For small vectors, avoiding a few calls to the heap allocator can make an observable difference in performance.
 
+
+
+    // Slices
+
+    // A slice, written [T] without specifying the length, is a region of an array or vector. Since a slice can be any length, slices can't be stored directly in variables or passed as function arguments. Slices are always passed by reference.
+
+    // A reference to a slice is a 'fat pointer': a two-word value comprising a pointer to the slice's first element, and the number of elements in the slice.
+    // Example:
+    let v: Vec<f64> = vec![0.0, 0.707, 1.0, 0.707]; // vector
+    let a: [f64; 4] = [0.0, -0.707, -1.0, -0.707]; // array
+
+    let sv: &[f64] = &v;
+    let sa: &[f64] = &a;
+
+    // For the last two lines, Rust automatically converts the &Vec<f64> reference and the &[f64; 4] reference to slice references that point directly to the data. See page 105 for diagram.
+
+    // An ordinary reference is a non-owning pointer to a single value, a reference to a slice is a non-owning pointer to several values. This makes slice references a good choice when you want to write a function that operates on any homogeneous data series, whether stored in an array, vector, stack, or heap. For example, a function that prints a slice of numbers, one per line:
+    fn print(n: &[f64]) {
+        for elt in n {
+            println!("{}", elt);
+        }
+    }
+
+    print(&v); // works on vectors
+    print(&a); // works on arrays
+
+    // Because this function takes a slice reference as an argument, we can apply it to either a vector or an array, as shown. In fact, many methods we'd might think of as belonging to vectors or arrays are actually methods defined on slices. For example, the sort and reverse methods, which sort or reverse a sequence of elements in place, are actually methods on the slice type [T].
+
+    // We can get a reference to a slice of an array or vector, or a slice of an existing slice, by indexing it with a range:
+    print(&v[0..2]); // print the first two elements of v
+    print(&a[2..]); // print elements of a starting with a[2]
+    print(&sv[1..3]); // print v[1] and v[2]
+
+    // Great explanation of why you'd want to work with references vs directly:
+    // https://www.reddit.com/r/rust/comments/au6khw/what_i_should_choose_reference_or_value/
+
+    // As with ordinary array accesses, Rust checks that the indices are valid. Trying to borrow a slice that extends past the end of the data results in a panic.
+
+    // We often use the terms slice for reference types like &[T] or &str, but that is a bit of shorthand. Those are properly called references to slices. Since slices almost always appear behind references, we use the shorter name for the more common concept.
 }
 
 
